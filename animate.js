@@ -8,6 +8,10 @@ var bounceButton = document.getElementById( "bounce" );
 //prepare to interact with canvas in 2D
 var ctx = c.getContext("2d");
 
+//preload logo
+var logo = new Image();
+logo.src = "DVD_Logo.png";
+
 //set fill color to lello
 ctx.fillStyle = "#ffff00";
 
@@ -32,57 +36,58 @@ var grow = function() {
     //init params for drawing dot
     var inc = 1;
     var radius = 50;
-    var xcor = c.width / 2;
+    var maxrad = Math.min(c.width, c.height) / 2;
     
     //Q: what happens w/ & w/o next line?
     //window.cancelAnimationFrame( requestID );
 
-    var circ = function() {
-	console.log( requestID )
+    var tick = function() {
+    	console.log( requestID )
 
-	ctx.clearRect( 0, 0, c.width, c.height );
-	
-	ctx.beginPath();
-	ctx.arc( xcor, c.height / 2, radius, 0, 2 * Math.PI );
-	ctx.stroke();
-	ctx.fill();
+    	ctx.clearRect( 0, 0, c.width, c.height );
+    	
+    	ctx.beginPath();
+    	ctx.arc(c.width / 2, c.height / 2, radius, 0, 2 * Math.PI );
+    	ctx.stroke();
+    	ctx.fill();
 
-	radius += inc;
-	if(radius > xcor || radius <= 0) {
-	    inc = -inc
-	}
-	requestID = window.requestAnimationFrame( circ );
+    	radius += inc;
+    	if(radius > maxrad || radius <= 0) {
+    	    inc = -inc;
+    	}
+    	requestID = window.requestAnimationFrame( tick );
     };
-    circ();
+    tick();
 };
 
 var bounce = function() {
     window.cancelAnimationFrame(requestID);
-    var x = c.width / 2 - 100;
-    var y = c.height / 2;
+    var x = 150;
+    var y = 100;
     var xvel = 1;
     var yvel = 1;
+    var width = 200;
+    var height = logo.height * width / logo.width;  // scales height
     var tick = function() {
-	console.log(requestID);
-	ctx.clearRect(0, 0, c.width, c.height);
-	ctx.beginPath();
-	ctx.fillRect(x, y, 100, 50);
-	x += xvel;
-	y += yvel;
-	if (x > c.width - 100 || x < 0)
-	    xvel = -xvel;
-	if (y > c.height - 50 || y < 0)
-	    yvel = -yvel;
-	requestID = window.requestAnimationFrame(tick);
+    	console.log(requestID);
+    	ctx.clearRect(0, 0, c.width, c.height);
+    	ctx.drawImage(logo, x, y, width, height);    	
+        x += xvel;
+    	y += yvel;
+    	if (x > c.width - width || x < 0)
+    	    xvel = -xvel;
+    	if (y > c.height - height || y < 0)
+    	    yvel = -yvel;
+    	requestID = window.requestAnimationFrame(tick);
     }
     tick();
 }
 
 var doAnime = function() {
     if(mode == "grow")
-	grow();
+	   grow();
     if(mode == "bounce")
-	bounce();
+	   bounce();
 }
 
 
@@ -99,11 +104,14 @@ c.addEventListener( "click", doAnime )
 stopButton.addEventListener( "click",  stopIt );
 growButton.addEventListener( "click",  function() {
     mode = "grow";
-    stopIt();
     doAnime();
+    stopIt();  // draw first frame and pause
 });
 bounceButton.addEventListener( "click", function() {
     mode = "bounce";
-    stopIt();
     doAnime();
+    stopIt();
 });
+
+doAnime();
+stopIt();
